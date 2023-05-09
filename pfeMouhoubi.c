@@ -92,6 +92,9 @@ TASK(displayLevel)
   OLEDPrintString("RES2: ");
   OLEDPrintInt(res2l,2);
   OLEDPrintString("/50");
+  OLEDPrintString("distance");
+  OLEDPrintInt(range,5000);
+  OLEDPrintString("cm");
   TerminateTask();
 }
 
