@@ -8,7 +8,7 @@ import uvicorn
 app = FastAPI()
 
 # Redis client
-r = redis.Redis(host='localhost', port=6379)# redis specifications
+r = redis.Redis(host='127.0.0.1', port=6379)# redis specifications
 
 # Redis Timeseries configuration
 TIMESERIES_RETENTION_TIME = 3600  # in seconds
