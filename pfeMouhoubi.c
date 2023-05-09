@@ -6,6 +6,8 @@
 #include <../../../board/iutNantes/include/oled.h>
 #include <../../../board/iutNantes/include/timer.h>
 #include <eic.h>
+#include <curl/curl.h>
+#include <time.h>
 #include "sensor_id_PH.h" // define the sensor's ID
 #include <EEPROM.h>
 #define PH_PIN A1
@@ -173,28 +175,51 @@ Task(transmitTask)
   SEXP StramID_   = PROTECT(allocVector(REALSXP, 32));
   SEXP FramePayload_   = PROTECT(allocVector(REALSXP, 32));
   PROTECT(5);
-
+/// data transmission 
   CURL *curl;
-  CURLcode res;
-  curl = curl_easy_init();
-  if(curl) {
+    CURLcode res;
     struct curl_slist *headers = NULL;
-    headers = curl_slist_append(headers, "Content-Type: application/json");
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(curl, CURLOPT_URL, "mongosh "mongodb+srv://imouhoubi:<password>@cluster0.lijzt0k.mongodb.net/test"); // database url
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "{\"data\": \"dataframe\"}");
- 
-    /* Perform the request, res will get the return code */ 
-    res = curl_easy_perform(curl);
-    /* Check for errors */ 
-    if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
- 
-    /*clean error */
-    curl_easy_cleanup(curl);
+    char url[] = "http://localhost:8000/distance_data"; 
 
-  return 0;
+    double distance = 10.5; // replace with the appropriate distance value
+
+    // Initialize libcurl
+    curl = curl_easy_init();
+    if (curl) {
+        // Set the POST headers
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        time_t timestamp = time(NULL); // Get now timestamp to send the server
+        // THIS how to get data inside string using sprintf
+        // #####################
+        char post_data[100];
+        sprintf(post_data, "{\"distance\": %.2f, \"timestamp\": %ld}", distance, timestamp);
+        // #####################
+        /*
+        In case of wanting to send the ph data use this line instead
+        sprintf(post_data, "{\"ph\": %.2f, \"timestamp\": %ld}", phValue, timestamp);
+        */
+
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_data);
+
+        // Set the URL and headers
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+        // Perform the request
+        res = curl_easy_perform(curl);
+
+        // Cleanup
+        curl_easy_cleanup(curl);
+        curl_slist_free_all(headers);
+
+        // Check for errors
+        if (res != CURLE_OK) {
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+            return 1;
+        }
+    }
+
+    return 0;
   TerminateTask();
   }
   
@@ -278,7 +303,7 @@ TerminateTask();
 TASK(measureTask2) // measure task for ph sensor
 {
 float voltage,phValue,temperature = 25;
-DFRobot_PH ph;
+Sensor_ID_PH ph;
 void setup(){
     Serial.begin(115200);  
     ph.begin();
@@ -295,6 +320,8 @@ void loop(){
     ph.calibration(voltage,temperature);          
 }
   //trigger
+  Task(displayTask){
+    
   digitalWrite(PORTB,8,2);
   for(volatile int i=0;i<1000;i++);
   digitalWrite(PORTB,8,3);
@@ -311,27 +338,47 @@ Task(transmitTask2)
   SEXP FramePayload_   = PROTECT(allocVector(REALSXP, 32));
   PROTECT(5);
 
+  // data transmission 
   CURL *curl;
-  CURLcode res;
-  curl = curl_easy_init();
-  if(curl) {
+    CURLcode res;
     struct curl_slist *headers = NULL;
-    headers = curl_slist_append(headers, "Content-Type: application/json");
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(curl, CURLOPT_URL, "mongosh "mongodb+srv://imouhoubi:<password>@cluster0.lijzt0k.mongodb.net/test"); // database url
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "{\"data\": \"PhValue\"}");
- 
-    /* Perform the request, res will get the return code */ 
-    res = curl_easy_perform(curl);
-    /* Check for errors */ 
-    if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
- 
-    /*clean error */
-    curl_easy_cleanup(curl);
+    char url[] = "http://localhost:8000/distance_data"; 
 
-  return 0;
+    double distance = 10.5; // replace with the appropriate distance value
+
+    // Initialize libcurl
+    curl = curl_easy_init();
+    if (curl) {
+        // Set the POST headers
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        time_t timestamp = time(NULL); // Get now timestamp to send the server
+        // THIS how to get data inside string using sprintf
+        // #####################
+        char post_data[100];
+        sprintf(post_data, "{\"ph\": %.2f, \"timestamp\": %ld}", phValue, timestamp);
+        
+
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_data);
+
+        // Set the URL and headers
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+        // Perform the request
+        res = curl_easy_perform(curl);
+
+        // Cleanup
+        curl_easy_cleanup(curl);
+        curl_slist_free_all(headers);
+
+        // Check for errors
+        if (res != CURLE_OK) {
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+            return 1;
+        }
+    }
+
+    return 0;
   TerminateTask();
   }
 ISR(triggerISR)
