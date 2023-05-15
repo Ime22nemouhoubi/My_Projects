@@ -1,18 +1,16 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import redis
-from redis.exceptions import RedisError
+import requests
 from datetime import datetime
 import uvicorn
 
 app = FastAPI()
 
-# Redis client
-r = redis.Redis(host='localhost', port=6379)# redis specifications
+# Grafana Cloud API URL
+GRAFANA_CLOUD_API_URL = "https://graphite-prod-13-prod-us-east-0.grafana.net/graphite"
 
-# Redis Timeseries configuration
-TIMESERIES_RETENTION_TIME = 3600  # in seconds
-TIMESERIES_CHUNK_SIZE = 1000
+# Grafana Cloud API authentication
+GRAFANA_CLOUD_API_AUTH = ("977486", "")
 
 # Models for request body
 class DistanceData(BaseModel):
@@ -27,33 +25,37 @@ class PhData(BaseModel):
 @app.post('/distance_data')
 def post_distance_data(distance_data: DistanceData):
     try:
-        # Add data to Redis Timeseries
-        r.execute_command('TS.ADD', 'distance_data', distance_data.timestamp, distance_data.distance, 'RETENTION', TIMESERIES_RETENTION_TIME, 'CHUNK_SIZE', TIMESERIES_CHUNK_SIZE)
-        return {'message': 'Data added to Redis Timeseries for distance_data'}
-    except RedisError as e:
-        raise HTTPException(status_code=500, detail=f'Error adding data to Redis: {str(e)}')
+        # Prepare data for Grafana Cloud API
+        data = f"distance_data value={distance_data.distance} {distance_data.timestamp}\n"
+        # Send data to Grafana Cloud API
+        response = requests.post(GRAFANA_CLOUD_API_URL, data=data, auth=GRAFANA_CLOUD_API_AUTH)
+        response.raise_for_status()
+        return {'message': 'Data added to Grafana Cloud for distance_data'}
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=f'Error adding data to Grafana Cloud: {str(e)}')
 
 @app.post('/ph_data')
 def post_ph_data(ph_data: PhData):
     try:
-        # Add data to Redis Timeseries
-        r.execute_command('TS.ADD', 'ph_data', ph_data.timestamp, ph_data.ph, 'RETENTION', TIMESERIES_RETENTION_TIME, 'CHUNK_SIZE', TIMESERIES_CHUNK_SIZE)
-        return {'message': 'Data added to Redis Timeseries for ph_data'}
-    except RedisError as e:
-        raise HTTPException(status_code=500, detail=f'Error adding data to Redis: {str(e)}')
+        # Prepare data for Grafana Cloud API
+        data = f"ph_data value={ph_data.ph} {ph_data.timestamp}\n"
+        # Send data to Grafana Cloud API
+        response = requests.post(GRAFANA_CLOUD_API_URL, data=data, auth=GRAFANA_CLOUD_API_AUTH)
+        response.raise_for_status()
+        return {'message': 'Data added to Grafana Cloud for ph_data'}
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=f'Error adding data to Grafana Cloud: {str(e)}')
 
-# Check Redis Timeseries on startup
+# Check Grafana Cloud API on startup
 @app.on_event('startup')
 def startup_event():
     try:
-        # Check if Timeseries for distance_data exists and create it if it doesn't
-        if not r.exists('distance_data'):
-            r.execute_command('TS.CREATE', 'distance_data', 'RETENTION', TIMESERIES_RETENTION_TIME, 'CHUNK_SIZE', TIMESERIES_CHUNK_SIZE)
-        # Check if Timeseries for ph_data exists and create it if it doesn't
-        if not r.exists('ph_data'):
-            r.execute_command('TS.CREATE', 'ph_data', 'RETENTION', TIMESERIES_RETENTION_TIME, 'CHUNK_SIZE', TIMESERIES_CHUNK_SIZE)
-    except RedisError as e:
-        raise HTTPException(status_code=500, detail=f'Error checking Redis Timeseries: {str(e)}')
+        # TODO: Check if data source for distance_data exists and create it if it doesn't
+        # TODO: Check if data source for ph_data exists and create it if it doesn't
+        pass
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=f'Error checking Grafana Cloud API: {str(e)}')
 
 
-uvicorn.run(app,host="41.220.149.120",port=8000) #set host to local ip ad
+
+uvicorn.run(app,host="41.220.149.120",port=3000) #set host to local ip address
