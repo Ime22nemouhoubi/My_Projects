@@ -51,7 +51,7 @@
 
 int void (main) {
 
-  void OLEDInit(int mode) {
+  TASK (OLEDInit) {
 
 
     EICInitClock(F1MHZ);
@@ -59,7 +59,7 @@ int void (main) {
 
     OLEDInit(0);
   }
-  void pinMode(int port, int pin, int mode) {
+  TASK (pinMode) {
     // Set pin mode code
     for (int i = 0; i < 8; i++) {
       pinMode(PORTB, i, OUTPUT);
@@ -79,7 +79,7 @@ int void (main) {
     return 0;
   }
 
-  void displayLevel() {
+  TASK (displayLevel) {
     OLEDSetLine(0);
     OLEDPrintString("RES1: ");
     OLEDPrintInt(res1l, 3);
@@ -96,7 +96,7 @@ int void (main) {
     TerminateTask();
   }
 
-  void dec() {
+  TASK (dec) {
     res1l = res1l - 1;
     if (res1l == 0) {
       CancelAlarm(alarmDecerement);
@@ -105,7 +105,7 @@ int void (main) {
     TerminateTask();
   }
 
-  void displayAlarm() {
+  TASK (displayAlarm) {
 
     volatile int i;
 
@@ -121,7 +121,7 @@ int void (main) {
     TerminateTask();
   }
 
-  void triggerISR() {
+  TASK (triggerISR) {
     if(digitalRead(PORTA,28) == 1) {
     
         digitalWrite(PORTA,13, 0);
@@ -132,13 +132,13 @@ int void (main) {
       }
   }
 
-  void timeoutTask () {
+  TASK (timeoutTask) {
     OLEDSetLine(3);
     OLEDPrintString("  Pas de capteur!");
     TerminateTask();
   }
 
-  void moteur () {
+  TASK (moteur) {
     if(res2l<40 && res1l !=0)
       {
         digitalWrite(PORTA, 16, 1);
@@ -153,7 +153,7 @@ int void (main) {
   TerminateTask();
   }
 
-  void measureTask () {
+  TASK (measureTask) {
   // trigger
     digitalWrite(PORTB,9,1);
   for(volatile int i=0;i<1000;i++);
@@ -162,7 +162,7 @@ int void (main) {
     TerminateTask();
   }
 
-  void transmitTask () {
+  TASK (transmitTask) {
   
     SEXP create_dataframe() { /// define http dataframe
     SEXP Length_ = PROTECT(allocVector(INTSXP , 16));
@@ -217,7 +217,7 @@ int void (main) {
   TerminateTask();
   } 
 
-  void DataCompression () {
+  TASK (DataCompression) {
   int curr1=0; 
   float percent = 0.05;
   int threshold = 1024*percent; 
