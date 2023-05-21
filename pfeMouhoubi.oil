@@ -185,7 +185,7 @@ CPU blink {
       CYCLETIME = 100;
     };
   };
-     TASK DataCompression{
+  TASK DataCompression {
     PRIORITY = 7;
     AUTOSTART = FALSE;
     ACTIVATION = 1;

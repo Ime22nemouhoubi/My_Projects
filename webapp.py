@@ -58,4 +58,4 @@ def startup_event():
 
 
 
-uvicorn.run(app,host="41.220.149.120",port=3000) #set host to local ip address
+uvicorn.run(app, host="0.0.0.0", port=8080) #set host to local ip address
