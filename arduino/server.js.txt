@@ -1,0 +1,32 @@
+const http = require('http');
+
+const hostname = '169.254.189.109'; // Change this to the IP address of your Raspberry Pi
+const port = 80; // Change this to the desired port number
+
+const server = http.createServer((req, res) => {
+  if (req.method === 'POST' && req.url === '/your-endpoint') {
+    let data = '';
+
+    req.on('data', chunk => {
+      data += chunk;
+    });
+
+    req.on('end', () => {
+      console.log('Data received:', data);
+      // Process the received data or forward it to the Node-RED server
+      // Implement your logic here
+
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'text/plain');
+      res.end('Data received successfully');
+    });
+  } else {
+    res.statusCode = 404;
+    res.setHeader('Content-Type', 'text/plain');
+    res.end('Not found');
+  }
+});
+
+server.listen(port, hostname, () => {
+  console.log(`Server running at http://${hostname}:${port}/`);
+});

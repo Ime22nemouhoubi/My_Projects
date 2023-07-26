@@ -1,0 +1,48 @@
+[
+  {
+    "id": "ffec7dc1.76d05",
+    "type": "http in",
+    "z": "5a245a1d.6461d4",
+    "name": "Receive Data",
+    "url": "/your-endpoint",
+    "method": "post",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 180,
+    "y": 160,
+    "wires": [
+      [
+        "af05a2d7.4f6288"
+      ]
+    ]
+  },
+  {
+    "id": "af05a2d7.4f6288",
+    "type": "function",
+    "z": "5a245a1d.6461d4",
+    "name": "Process Data",
+    "func": "var mainFlowRate = msg.payload.main_flow_rate;\nvar secondaryFlowRate = msg.payload.secondary_flow_rate;\n\n// Add your data processing logic here\n\nmsg.payload = {\n    mainFlowRate: mainFlowRate,\n    secondaryFlowRate: secondaryFlowRate\n};\n\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "x": 410,
+    "y": 160,
+    "wires": [
+      [
+        "4183345f.4f96f8"
+      ]
+    ]
+  },
+  {
+    "id": "4183345f.4f96f8",
+    "type": "http response",
+    "z": "5a245a1d.6461d4",
+    "name": "HTTP Response",
+    "statusCode": "",
+    "headers": {},
+    "x": 640,
+    "y": 160,
+    "wires": []
+  }
+]

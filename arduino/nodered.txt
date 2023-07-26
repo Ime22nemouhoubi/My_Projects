@@ -1,0 +1,97 @@
+[
+    {
+        "id": "eb43ae4f.8c13c8",
+        "type": "http in",
+        "z": "26a03d4c.67e83e",
+        "name": "/receive-data",
+        "url": "/receive-data",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 220,
+        "wires": [
+            [
+                "8d95e173.a14b78",
+                "f8f63b80.ead6e"
+            ]
+        ]
+    },
+    {
+        "id": "8d95e173.a14b78",
+        "type": "function",
+        "z": "26a03d4c.67e83e",
+        "name": "Process Data",
+        "func": "var mainFlowRate = msg.payload.main_flow_rate;\nvar secondaryFlowRate = msg.payload.secondary_flow_rate;\n\n// Process the data as required\n\n// Log the data\nconsole.log(\"Main Flow Rate: \" + mainFlowRate);\nconsole.log(\"Secondary Flow Rate: \" + secondaryFlowRate);\n\n// Create flow rate chart data\nvar flowRateChartData = [\n    {\"series\": [\"Main Flow Rate\"], \"data\": [[Date.now(), mainFlowRate]]},\n    {\"series\": [\"Secondary Flow Rate\"], \"data\": [[Date.now(), secondaryFlowRate]]}\n];\n\nmsg.payload = flowRateChartData;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 380,
+        "y": 220,
+        "wires": [
+            [
+                "34a9b2ce.f540b8",
+                "42946b9c.aab344"
+            ]
+        ]
+    },
+    {
+        "id": "34a9b2ce.f540b8",
+        "type": "ui_chart",
+        "z": "26a03d4c.67e83e",
+        "name": "Flow Rate Chart",
+        "group": "YOUR_CHART_GROUP_ID",
+        "order": 1,
+        "width": "0",
+        "height": "0",
+        "label": "Flow Rate Chart",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "5",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#ff7f0e"
+        ],
+        "outputs": 0,
+        "useDifferentColor": false,
+        "x": 610,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "42946b9c.aab344",
+        "type": "http response",
+        "z": "26a03d4c.67e83e",
+        "name": "HTTP Response",
+        "statusCode": "",
+        "headers": {},
+        "x": 600,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "f8f63b80.ead6e",
+        "type": "debug",
+        "z": "26a03d4c.67e83e",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "x": 370,
+        "y": 140,
+        "wires": []
+    }
+]
