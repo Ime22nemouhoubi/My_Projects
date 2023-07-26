@@ -1,1 +1,1 @@
-goil --target=cortex/armv6m/samd21/XPlainedPro --templates=/usr/share/trampoline-master/goil/templates/ pfeMouhoubi.oil
+goil --target=cortex/armv6m/samd21/XPlainedPro --templates= /.../.../.../.../.../.../.../trampoline/goil/templates/ $1

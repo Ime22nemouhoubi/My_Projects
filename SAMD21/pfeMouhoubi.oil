@@ -17,16 +17,16 @@ CPU blink {
     STATUS = EXTENDED;
     
     BUILD = TRUE {
-      TRAMPOLINE_BASE_PATH = "/usr/share/trampoline-master/";	
-      APP_SRC = "../board/iutNantes/src/adc.c";
-      APP_SRC = "../board/iutNantes/src/oled.c";
-      APP_SRC = "../board/iutNantes/src/serial.c";
-      APP_SRC = "../board/iutNantes/src/dac.c";
-      APP_SRC = "../board/iutNantes/src/redirectPrintf.c";
-      APP_SRC = "../board/iutNantes/src/timer.c";
-      CFLAGS  = "-I../board/iutNantes/include"; 
+      TRAMPOLINE_BASE_PATH = "../../../../../../";	
+      APP_SRC = "board/iutNantes/src/adc.c";
+      APP_SRC = "board/iutNantes/src/oled.c";
+      APP_SRC = "board/iutNantes/src/serial.c";
+      APP_SRC = "board/iutNantes/src/dac.c";
+      APP_SRC = "board/iutNantes/src/redirectPrintf.c";
+      APP_SRC = "board/iutNantes/src/timer.c";
+      CFLAGS  = "-I board/iutNantes/include"; 
       APP_SRC = "pfeMouhoubi.c";
-      APP_NAME = "pfeMouhoubi.elf";
+      APP_NAME = "pfeMouhoubi_exe";
       CFLAGS  = "-O3 -std=c99"; 
       COMPILER = "arm-none-eabi-gcc";
       ASSEMBLER = "arm-none-eabi-as";
@@ -45,107 +45,16 @@ CPU blink {
   };
   
   APPMODE std {};
-
-
-  TASK moteur {
-    PRIORITY = 20;
-    AUTOSTART = FALSE;
-    ACTIVATION = 1;
-    SCHEDULE = FULL;
-  };
-  
-  ALARM activateMot {
-    COUNTER = SystemCounter;
-    ACTION = ACTIVATETASK {
-      TASK = moteur;
-    };
-    AUTOSTART = TRUE {
-      APPMODE = std;
-      ALARMTIME = 100;
-      CYCLETIME = 100;
-    };
-  };
-
-
- TASK dec {
-    PRIORITY = 20;
-    AUTOSTART = FALSE;
-    ACTIVATION = 1;
-    SCHEDULE = FULL;
- };
-
-  ALARM alarmDecerement {
-    COUNTER = SystemCounter;
-    ACTION = ACTIVATETASK {
-      TASK = dec;
-    };
-    AUTOSTART = FALSE;
-  };
-
-  TASK displayLevel {
-    PRIORITY = 5;
-    AUTOSTART = FALSE;
-    ACTIVATION = 1;
-    SCHEDULE = FULL;
-  };
-  
-  ALARM activateDisplay {
-    COUNTER = SystemCounter;
-    ACTION = ACTIVATETASK {
-      TASK = displayLevel;
-    };
-    AUTOSTART = TRUE {
-      APPMODE = std;
-      ALARMTIME = 100;
-      CYCLETIME = 100;
-    };
-  };
-
-
-  TASK displayAlarm {
-    PRIORITY = 5;
-    AUTOSTART = FALSE;
-    ACTIVATION = 1;
-    SCHEDULE = FULL;
-  };
-  
-  ALARM activateAlarm {
-    COUNTER = SystemCounter;
-    ACTION = ACTIVATETASK {
-      TASK = displayAlarm;
-    };
-    AUTOSTART = FALSE;
-  };
-
-
- ISR triggerS1 {
-   CATEGORY = 2;
-   PRIORITY = 30;
-   STACKSIZE = 256;
-   SOURCE = EIC_IRQ {
-     PIN = PA28 {
-      TRIGGER = BOTH;
-       FILTERING = TRUE;
-       PULL= NONE;
-     };
-   };
- };
-
-
+ 
 
 
   TASK measureTask {
-    PRIORITY = 5;
+    PRIORITY = 2;
     AUTOSTART = FALSE;
     ACTIVATION = 1;
     SCHEDULE = FULL;
   };
-   TASK measureTask2 {
-    PRIORITY = 6;
-    AUTOSTART = FALSE;
-    ACTIVATION = 1;
-    SCHEDULE = FULL;
-  };
+  
   ALARM activatePeriodic {
     COUNTER = SystemCounter;
     ACTION = ACTIVATETASK {
@@ -159,7 +68,7 @@ CPU blink {
   };
   
   TASK timeoutTask {
-    PRIORITY = 3;
+    PRIORITY = 1;
     AUTOSTART = FALSE;
     ACTIVATION = 1;
     SCHEDULE = FULL;
@@ -172,17 +81,18 @@ CPU blink {
     };
     AUTOSTART = FALSE;
   };
-   TASK transmitTask{
-    PRIORITY = 7;
+
+  TASK displayTask {
+    PRIORITY = 2;
     AUTOSTART = FALSE;
     ACTIVATION = 1;
     SCHEDULE = FULL;
   };
   
-  ALARM activatePeriodic {
+  ALARM activateDisplay {
     COUNTER = SystemCounter;
     ACTION = ACTIVATETASK {
-      TASK = transmitTask;
+      TASK = displayTask;
     };
     AUTOSTART = TRUE {
       APPMODE = std;
@@ -190,14 +100,32 @@ CPU blink {
       CYCLETIME = 100;
     };
   };
-  TASK DataCompression {
-    PRIORITY = 8;
+TASK Measure_Task {
+    PRIORITY = 3;
     AUTOSTART = FALSE;
     ACTIVATION = 1;
     SCHEDULE = FULL;
   };
   
-  ALARM activatePeriodic {
+  ALARM activateMot {
+    COUNTER = SystemCounter;
+    ACTION = ACTIVATETASK {
+      TASK = Measure_Task;
+    };
+    AUTOSTART = TRUE {
+      APPMODE = std;
+      ALARMTIME = 100;
+      CYCLETIME = 100;
+    };
+  };
+TASK DataCompression {
+    PRIORITY = 4;
+    AUTOSTART = FALSE;
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+  };
+  
+  ALARM activateMot {
     COUNTER = SystemCounter;
     ACTION = ACTIVATETASK {
       TASK = DataCompression;
@@ -208,10 +136,9 @@ CPU blink {
       CYCLETIME = 100;
     };
   };
-
   ISR triggerISR {
     CATEGORY = 2;
-    PRIORITY = 30;
+    PRIORITY = 3;
     STACKSIZE = 256;
     SOURCE = EIC_IRQ {
       PIN = PB15 {
@@ -221,4 +148,41 @@ CPU blink {
       };
     };
   };
+ TASK Serial_Print {
+    PRIORITY = 3;
+    AUTOSTART = FALSE;
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+  };
+  
+  ALARM serialTrans {
+    COUNTER = SystemCounter;
+    ACTION = ACTIVATETASK {
+      TASK = Serial_Print;
+    };
+    AUTOSTART = TRUE {
+      APPMODE = std;
+      ALARMTIME = 1000;
+      CYCLETIME = 1000;
+    };
+  };
+ TASK Http_TransmissionTask {
+    PRIORITY = 3;
+    AUTOSTART = FALSE;
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+  };
+  
+  ALARM httpTrans {
+    COUNTER = SystemCounter;
+    ACTION = ACTIVATETASK {
+      TASK = Http_TransmissionTask;
+    };
+    AUTOSTART = TRUE {
+      APPMODE = std;
+      ALARMTIME = 1000;
+      CYCLETIME = 1000;
+    };
+  }; 
 };
+
